@@ -3,7 +3,7 @@
 ## 전체적인 절차
 - [x] 1. 요구사항 작성 (도메인 규칙 + User Story, 조건부 Use Case)
 - [x] 2. Gherkin Scenario 작성
-- [ ] 3. 인수 테스트 셋업 (.feature + Runner, 미구현은 @pending)
+- [x] 3. 인수 테스트 셋업 (.feature + Runner, 미구현은 @pending)
 - [x] 4. Unit Test 목록 작성
 - [ ] 5. Walking Skeleton 구현
 - [ ] 6. 테스트 구현 (RGB 사이클 — 각 Green이 자기 시나리오 @pending 해제)
@@ -320,6 +320,30 @@ Feature: 장바구니 결제 금액 계산
   Gherkin에 남겼다(E-16)
 
 ## 3. 인수 테스트 셋업
+
+> `/cucumber-acceptance`(acceptance-first, 신규 셋업)로 §2 Gherkin을 그대로 `.feature`로 옮겼다.
+> **실행되는 원본** = `src/test/resources/com/example/cart/cart-checkout.feature`.
+
+- **시나리오 수**: 15개 실행 단위(E-1~E-16, E-3 결번). 단순 `Scenario` 8개(E-1, E-6, E-7,
+  E-8, E-13, E-14, E-15, E-16) + `Scenario Outline` 2개(마일리지 차감 범위 Outline: E-2/E-4/E-5,
+  입력 유효성 Outline: E-9~E-12)를 케이스별 `Examples:` 블록으로 쪼갠 7개.
+- **`@pending` 처리**: 계산 로직(SUT)이 아직 없어 전체 15개 실행 단위에 `@pending`을 붙여
+  Runner의 `not @pending` 필터로 제외했다. Scenario Outline은 각 `Examples:` 블록에 개별
+  태그를 붙여, §6 RGB에서 케이스 하나씩(예: E-2만) 태그를 해제할 수 있게 했다 — 전부
+  green이 되면 한 블록으로 다시 합친다(SKILL.md "생애주기" 절차).
+- **구조 (Four Layer 축소형)**:
+  - `.feature`: `src/test/resources/com/example/cart/cart-checkout.feature`
+  - Steps: `src/test/java/com/example/cart/CartCalculationSteps.java` (파싱 + Driver 위임만)
+  - Protocol Driver: `src/test/java/com/example/cart/CartCalculationDriver.java` (in-process,
+    `CartCalculator` 호출을 여기에만 격리)
+  - Runner: `src/test/java/com/example/cart/RunCucumberTest.java`
+  - SUT 시그니처(계산 로직은 미구현, §5·§6에서 채움):
+    `src/main/java/com/example/cart/CartLine.java`,
+    `src/main/java/com/example/cart/CalculateCartRequest.java`,
+    `src/main/java/com/example/cart/CartCalculator.java`
+    (`CartCalculator.calculate()`는 현재 `UnsupportedOperationException`만 던진다)
+- **실행 결과**: `mvn test` — BUILD SUCCESS, Tests run: 15, Failures: 0, Errors: 0, Skipped: 15
+  (전부 `@pending` 필터에 의한 의도된 SKIPPED, undefined step 없음).
 
 ## 4. Unit Test 목록
 
