@@ -1,18 +1,21 @@
 package com.example.cart;
 
 import io.cucumber.java.en.Given;
+import org.springframework.beans.factory.annotation.Autowired;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Steps — 파싱과 {@link CartCalculationDriver} 위임만 한다. SUT({@link CartCalculator})와의
- * 상호작용 코드는 이 클래스에 두지 않는다(Protocol Driver 분리).
+ * Steps — 파싱과 {@link CartCalculationDriver} 위임만 한다. SUT와의 상호작용 코드(HTTP 호출·
+ * DB 시드)는 이 클래스에 두지 않는다(Protocol Driver 분리). 채널이 in-process 계산 호출에서
+ * REST+JPA+MySQL로 바뀌었지만 이 클래스는 driver 주입 방식만 바뀌었다.
  */
 public class CartCalculationSteps {
 
-    private final CartCalculationDriver driver = new CartCalculationDriver();
+    @Autowired
+    private CartCalculationDriver driver;
 
     @Given("장바구니에 단가 {int}원 상품이 {int}개 담겨 있다")
     public void 장바구니에_상품이_담겨_있다(final long unitPrice, final int quantity) {
