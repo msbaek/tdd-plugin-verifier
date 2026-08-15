@@ -32,6 +32,9 @@ public class CartCalculator {
         if (request.coupon() < 0) {
             throw new IllegalArgumentException("쿠폰은 음수일 수 없다");
         }
+        if (request.mileage() < 0) {
+            throw new IllegalArgumentException("마일리지는 음수일 수 없다");
+        }
         return 0;
     }
 }
