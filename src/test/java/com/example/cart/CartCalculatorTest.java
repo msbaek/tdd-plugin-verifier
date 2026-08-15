@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class CartCalculatorTest {
 
@@ -15,5 +16,11 @@ class CartCalculatorTest {
         final long finalAmount = calculator.calculate(new CalculateCartRequest(List.of(), 0, 0));
 
         assertThat(finalAmount).isEqualTo(0);
+    }
+
+    @Test
+    void 계산_요청_자체가_null이면_거부된다() {
+        assertThatThrownBy(() -> calculator.calculate(null))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 }
