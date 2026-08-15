@@ -148,6 +148,22 @@
 - 입력 유효성은 계산기 책임(위 도메인 규칙의 "입력 유효성" 항목 참조), 외부 상태 의존적
   검증(잔고·쿠폰 유효기간)은 범위 밖.
 
+### 인수 테스트 채널 결정 (사용자 재확인 — §3 셋업 이후 변경)
+
+- 인수 테스트(§3 `.feature`)는 **in-process 계산 호출이 아니라 실제 HTTP → 실제 Spring
+  앱 → 실제 MySQL(Testcontainers)까지 관통**해야 한다(사용자 결정). `cucumber-acceptance`
+  스킬의 기본 권장(in-process driver 우선, 속도)보다 이 프로젝트에서는 REST+JPA+MySQL
+  파이프라인 검증이 우선한다.
+- REST API는 **장바구니 ID로 DB에 저장된 라인을 조회**한다(요청 본문에 라인을 직접
+  담지 않음). 즉 POST 요청은 `cartId · coupon · mileage`만 받고, 라인은 Repository가
+  MySQL에서 가져온다. Given 스텝은 그 라인을 미리 DB에 시드한다.
+- **파급**: §1의 계산 규칙(도메인 규칙 0층, `CartCalculator.calculate(CalculateCartRequest)`)은
+  그대로 순수 함수로 남는다 — 바뀌는 것은 그 앞단이다. Walking Skeleton(§5)의 Controller가
+  `cartId`로 JPA Repository에서 라인을 조회해 `CalculateCartRequest`를 만들고 계산기에
+  위임하는 역할을 맡는다. 이 결정으로 §5(Walking Skeleton)와 §7(JPA Repository)의
+  핵심 골격이 §3 인수 테스트 인프라와 함께 앞당겨 구축된다 — §3의 Driver가 in-process
+  호출 대신 `TestRestTemplate`(또는 `MockMvc`) + 실제 MySQL 시드로 교체된다.
+
 ## 2. Gherkin Scenario
 
 > **숫자의 정본은 §1 "검산 전개"다.** 아래 `Examples` 표의 모든 수치는 그 전개(대표 입력 1건 +
