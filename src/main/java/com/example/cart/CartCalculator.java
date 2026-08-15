@@ -8,6 +8,9 @@ package com.example.cart;
 public class CartCalculator {
 
     public long calculate(final CalculateCartRequest request) {
+        if (request == null) {
+            throw new IllegalArgumentException("계산 요청은 null일 수 없다");
+        }
         return 0;
     }
 }
