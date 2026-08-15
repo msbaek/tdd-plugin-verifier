@@ -8,7 +8,6 @@ package com.example.cart;
 public class CartCalculator {
 
     public long calculate(final CalculateCartRequest request) {
-        throw new UnsupportedOperationException(
-                "장바구니 결제 금액 계산은 아직 구현되지 않았다 — §5 Walking Skeleton·§6 RGB에서 구현된다");
+        return 0;
     }
 }

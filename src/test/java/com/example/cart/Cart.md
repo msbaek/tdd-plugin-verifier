@@ -477,7 +477,7 @@ E-1 이후로는 집계·기술 도메인·불변식 순으로 일반화해 나�
 따라 null 층(E-14·E-15) → 필드 층(E-9~E-12) → 라인 순서(E-16) → 빈 장바구니+할인
 경계(E-13) 순으로 배치했다:
 
-- [ ] E-7. 빈 장바구니는 배송비도 붙지 않는다 *(most degenerate — Gherkin)*
+- [x] E-7. 빈 장바구니는 배송비도 붙지 않는다 *(most degenerate — Gherkin)*
 - [ ] U-1. 계산 요청 자체가 null이면 거부된다 *(unit, 보류 — §5 이후 재판단)*
 - [ ] E-14. 라인 목록 자체가 null이면 거부된다 *(Gherkin)*
 - [ ] E-15. 라인 목록 안에 null 라인이 섞여 있으면 거부된다 *(Gherkin)*
@@ -615,7 +615,7 @@ E-1의 `@pending`을 임시로 떼고 실행 → 실행 SQL 로그가 `insert in
 
 ## 6. 진행 기록
 
-기어: low
+기어: low (폭발 반경 high-stakes: 금액 계산 — 완료 시 적대적 리뷰) / 시작 커밋: a4ae5bd
 
 ## 7. JPA Repository
 
