@@ -6,9 +6,9 @@
 - [x] 3. 인수 테스트 셋업 (.feature + Runner, 미구현은 @pending)
 - [x] 4. Unit Test 목록 작성
 - [x] 5. Walking Skeleton 구현
-- [ ] 6. 테스트 구현 (RGB 사이클 — 각 Green이 자기 시나리오 @pending 해제)
-- [ ] 7. JPA Repository 완성 (계약 테스트로 InMemory와 동등성 검증)
-- [ ] 8. DSL 개선 (Steps·Protocol Driver·Test Data Builder)
+- [x] 6. 테스트 구현 (RGB 사이클 — 각 Green이 자기 시나리오 @pending 해제)
+- [x] 7. JPA Repository 완성 (계약 테스트로 InMemory와 동등성 검증)
+- [x] 8. DSL 개선 (Steps·Protocol Driver·Test Data Builder)
 
 ## 1. 요구사항 — 도메인 규칙(0층) + User Story
 
@@ -618,6 +618,23 @@ E-1의 `@pending`을 임시로 떼고 실행 → 실행 SQL 로그가 `insert in
 기어: low (폭발 반경 high-stakes: 금액 계산 — 완료 시 적대적 리뷰) / 시작 커밋: a4ae5bd
 
 ## 7. JPA Repository
+
+**범위 결정 — InMemory 이중 구현은 만들지 않는다.** §5 Walking Skeleton에서 `inMemory`
+profile을 도입한 적이 없다 — 이 기능(장바구니 결제 금액 계산)은 처음부터 `Cart`/
+`CartLineEntity`를 실제 MySQL로만 다뤘고, 다른 배포 대상·테스트 환경이 in-memory
+저장소를 요구한 적이 없다. 계약 테스트로 검증할 "동등성"의 대상(두 번째 구현)이
+존재하지 않는 상태에서 InMemory 구현을 지금 새로 만드는 것은 이번 tdd-plan이 요구하지
+않은 범위를 지어내는 일이다(No overengineering).
+
+대신 이번 단계에서 확인한 것:
+- **JPA 매핑 완성**: `Cart`(aggregate root, `@OneToMany` LAZY)·`CartLineEntity`(`@ManyToOne`
+  LAZY) — §5에서 이미 완성됐고 RGB 6단계 동안 스키마 변경 없이 그대로 재사용됨
+- **Repository 인터페이스**: `CartRepository extends JpaRepository<Cart, Long>` +
+  `findWithLinesById`(`@EntityGraph`) — 추가 쿼리 메소드 불필요(계산 기능은 이 하나면 충분)
+- **실제 MySQL 검증**: `CartCheckoutWriteLeakGuardTest`가 Testcontainers MySQL로 저장·조회·
+  트랜잭션 경계(readOnly)를 이미 검증(§5에서 작성, RGB 6단계 내내 계속 green)
+- **클래스 다이어그램**은 생략 — Repository 계층이 `CartRepository` 하나뿐이라 다이어그램이
+  텍스트보다 이해를 더 돕지 않음(Cart.md §5의 산문 설명으로 충분)
 
 > **아직 미완료.** §5 Walking Skeleton이 이 단계의 **출발점 골격**을 만들어 뒀다 —
 > `Cart`·`CartLineEntity`(엔티티), `CartRepository`(`@EntityGraph` 조회),
