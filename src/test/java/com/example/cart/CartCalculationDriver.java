@@ -30,6 +30,7 @@ class CartCalculationDriver {
 
     private Long finalAmount;
     private boolean rejected;
+    private org.springframework.http.HttpStatusCode lastStatusCode;
     private String lastStatus = "(요청 전)";
 
     CartCalculationDriver(final TestRestTemplate restTemplate, final CartRepository cartRepository) {
@@ -83,6 +84,7 @@ class CartCalculationDriver {
                 CheckoutResponse.class,
                 cartId);
 
+        lastStatusCode = response.getStatusCode();
         lastStatus = response.getStatusCode().toString();
         if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
             finalAmount = response.getBody().finalAmount();
@@ -103,6 +105,11 @@ class CartCalculationDriver {
 
     boolean wasRejected() {
         return rejected;
+    }
+
+    /** 잘못된 입력이 4xx(클라이언트 오류)로 거부됐는지 확인한다 — 5xx(서버 오류)를 거부로 오인하지 않는다. */
+    boolean wasRejectedAsClientError() {
+        return rejected && lastStatusCode != null && lastStatusCode.is4xxClientError();
     }
 
     /**
