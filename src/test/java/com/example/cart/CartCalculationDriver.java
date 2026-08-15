@@ -107,9 +107,13 @@ class CartCalculationDriver {
         return rejected;
     }
 
-    /** 잘못된 입력이 4xx(클라이언트 오류)로 거부됐는지 확인한다 — 5xx(서버 오류)를 거부로 오인하지 않는다. */
+    /**
+     * 입력 유효성 위반이 정확히 400(Bad Request)으로 거부됐는지 확인한다.
+     * 5xx(서버 오류)를 거부로 오인하지 않는 것은 물론, 404(장바구니 없음)도 별개
+     * 실패 사유이므로 뭉뚱그리지 않는다 — mid 적대적 리뷰 MAJOR #1.
+     */
     boolean wasRejectedAsClientError() {
-        return rejected && lastStatusCode != null && lastStatusCode.is4xxClientError();
+        return rejected && org.springframework.http.HttpStatus.BAD_REQUEST.equals(lastStatusCode);
     }
 
     /**
