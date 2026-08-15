@@ -5,7 +5,7 @@
 - [x] 2. Gherkin Scenario 작성
 - [x] 3. 인수 테스트 셋업 (.feature + Runner, 미구현은 @pending)
 - [x] 4. Unit Test 목록 작성
-- [ ] 5. Walking Skeleton 구현
+- [x] 5. Walking Skeleton 구현
 - [ ] 6. 테스트 구현 (RGB 사이클 — 각 Green이 자기 시나리오 @pending 해제)
 - [ ] 7. JPA Repository 완성 (계약 테스트로 InMemory와 동등성 검증)
 - [ ] 8. DSL 개선 (Steps·Protocol Driver·Test Data Builder)
@@ -347,11 +347,11 @@ Feature: 장바구니 결제 금액 계산
   Runner의 `not @pending` 필터로 제외했다. Scenario Outline은 각 `Examples:` 블록에 개별
   태그를 붙여, §6 RGB에서 케이스 하나씩(예: E-2만) 태그를 해제할 수 있게 했다 — 전부
   green이 되면 한 블록으로 다시 합친다(SKILL.md "생애주기" 절차).
-- **구조 (Four Layer 축소형)**:
+- **구조 (Four Layer 축소형)** — ⚠️ **채널은 §5에서 REST+JPA+MySQL로 교체됐다**(아래 "채널 교체" 참조):
   - `.feature`: `src/test/resources/com/example/cart/cart-checkout.feature`
   - Steps: `src/test/java/com/example/cart/CartCalculationSteps.java` (파싱 + Driver 위임만)
-  - Protocol Driver: `src/test/java/com/example/cart/CartCalculationDriver.java` (in-process,
-    `CartCalculator` 호출을 여기에만 격리)
+  - Protocol Driver: `src/test/java/com/example/cart/CartCalculationDriver.java`
+    (SUT와의 상호작용을 여기에만 격리)
   - Runner: `src/test/java/com/example/cart/RunCucumberTest.java`
   - SUT 시그니처(계산 로직은 미구현, §5·§6에서 채움):
     `src/main/java/com/example/cart/CartLine.java`,
@@ -360,6 +360,31 @@ Feature: 장바구니 결제 금액 계산
     (`CartCalculator.calculate()`는 현재 `UnsupportedOperationException`만 던진다)
 - **실행 결과**: `mvn test` — BUILD SUCCESS, Tests run: 15, Failures: 0, Errors: 0, Skipped: 15
   (전부 `@pending` 필터에 의한 의도된 SKIPPED, undefined step 없음).
+
+### 채널 교체 (§5 Walking Skeleton과 함께 수행)
+
+§1 "인수 테스트 채널 결정"에 따라 Driver의 채널을 in-process 계산 호출에서 **실제 HTTP →
+실제 Spring 앱 → 실제 MySQL(Testcontainers)**로 교체했다. **`.feature`와 Steps의 스텝
+문구는 한 글자도 바뀌지 않았다** — Protocol Driver 분리가 값을 한 것이다.
+
+- `CartCalculationDriver` — `new CartCalculator()` 직접 호출 → `TestRestTemplate`
+  (`POST /carts/{cartId}/checkout`) + `CartRepository`로 MySQL 시드. 공개 메서드
+  시그니처는 그대로라 Steps는 driver를 `new` 대신 `@Autowired`로 받는 것만 바뀌었다.
+- `Given` "…담겨 있다"는 이제 **MySQL에 라인을 시드**하는 동작이고(`calculate()` 시점에
+  `save()` 한 번으로 일괄 시드), `When` "계산을 요청하면"은 **실제 HTTP POST**다.
+- 새 파일:
+  - `src/test/java/com/example/cart/CucumberSpringConfiguration.java`
+    (`@CucumberContextConfiguration` + `@SpringBootTest(webEnvironment = RANDOM_PORT)` +
+    `@ActiveProfiles("test")`)
+  - `src/test/java/com/example/cart/CartAcceptanceTestConfig.java`
+    (Driver를 `@ScenarioScope` bean으로 등록 — 시나리오 간 상태 누출 차단)
+  - `src/test/java/com/example/cart/MySqlTestContainer.java` (MySQL 컨테이너 싱글턴 +
+    `@DynamicPropertySource`)
+  - `src/test/resources/application-test.yml`
+- **미결(§6로 위임)**: E-14(라인 목록 null)·E-15(null 라인)는 **REST+DB 채널로 표현할 수
+  없다** — 라인이 요청 본문이 아니라 DB에서 오므로 null이 될 수 없다. Driver는 이 두
+  경우 명시적 `UnsupportedOperationException`으로 그 사실을 드러낸다(조용한 통과 금지).
+  §5 "미결 항목" 참조.
 
 ## 4. Unit Test 목록
 
@@ -498,10 +523,107 @@ E-1 이후로는 집계·기술 도메인·불변식 순으로 일반화해 나�
 
 ## 5. Walking Skeleton
 
+> **real**(실제 HTTP → 실제 앱 → 실제 MySQL) + **thinnest**(비즈니스 로직 0). Controller는
+> 조회 → DTO 변환 → 계산기 위임만 하는 pass-through이고, 계산 규칙(§1)은 여전히 §6 RGB의
+> 몫이다 — `CartCalculator.calculate()`는 아직 `UnsupportedOperationException`을 던진다.
+
+### 관통시킨 슬라이스
+
+`POST /carts/{cartId}/checkout` — body `{"coupon":…, "mileage":…}` →
+`cartId`로 라인 조회 → `CalculateCartRequest` 조립 → `CartCalculator` 위임 →
+`{"finalAmount":…}` (200) / 장바구니 없음 404.
+
+라인은 요청 본문에 없다(§1 채널 결정) — MySQL에서 온다. 인수 조건에 없는 쓰기 API는
+만들지 않았다: 시드는 테스트가 Repository로 직접 한다.
+
+### 엔티티 스키마 (최소)
+
+| 테이블 | 컬럼 |
+|---|---|
+| `carts` | `id` (PK, IDENTITY) |
+| `cart_lines` | `id` (PK), `cart_id` (FK NOT NULL), `product`, `unit_price` (BIGINT), `quantity` (INT) |
+
+- 수량·단가에 **DB 제약을 걸지 않았다** — §1의 유효성 검사(수량 < 1, 단가 < 0 거부)는
+  계산기의 책임이고, DB가 먼저 막으면 E-9·E-10을 검증할 수 없다.
+- 영속 엔티티(`Cart`, `CartLineEntity`)와 도메인 값 객체(`CartLine`)는 **의도적으로 분리**
+  했다 — 계산 규칙은 영속성을 알지 못하는 순수 함수로 남는다.
+
+### 영속성 경계 결정 (이후 모든 Controller의 기준 — RGB가 임의로 우회하지 않는다)
+
+| 항목 | 결정 | 근거·강제 수단 |
+|---|---|---|
+| OSIV | `spring.jpa.open-in-view: false` **명시** | 항목 부재 = 기본값 `true`(켜짐). `application.yml`·`application-test.yml` 양쪽에 명시 |
+| 트랜잭션 경계 | **Controller 메서드**(`@Transactional(readOnly = true)`) — 이 단계 한정 | 조회 전용이므로 Hibernate flush가 MANUAL → dirty checking 쓰기가 DB로 새지 않는다 |
+| 연관관계 | `Cart.lines`·`CartLineEntity.cart` 모두 **LAZY 유지** | 전역 EAGER 없음. detach로 가드하지 않는다(LAZY와 배타적) |
+| 조회 | `CartRepository.findWithLinesById` + `@EntityGraph(attributePaths = "lines")` | 실행 SQL이 `carts left join cart_lines` **한 방**임을 로그로 확인 |
+| 저장 | 명시적 `save()`만 | 아래 누출 가드 |
+| 응답 | 엔티티가 아니라 **DTO**(`CheckoutResponse`) | Controller 반환 타입으로 강제 |
+| 계산기 등록 | `CartConfig`의 `@Bean` | 도메인 클래스에 Spring 애노테이션을 붙이지 않는다 |
+
+### `save()` 누출 가드 (회귀 테스트) — 실패 주입으로 비공허성 확인 완료
+
+`src/test/java/com/example/cart/CartCheckoutWriteLeakGuardTest.java` — 체크아웃 요청 후에도
+`cart_lines`가 그대로인지 **aggregate가 아닌 `CartLineJpaRepository`로 DB를 직접 조회**해
+확인한다(1차 캐시가 가리지 않도록 테스트에 `@Transactional`을 붙이지 않는다). 계산기는
+`@MockBean`으로 대체 — 이 테스트가 보는 것은 계산 결과가 아니라 영속성 경계다.
+
+실패 주입 결과 (경계를 얹는 같은 변경에 가드를 동봉했다):
+
+| 주입 | 결과 |
+|---|---|
+| Controller에 `cart.getLines().get(0).changeQuantity(99)` 추가 + `readOnly` 제거 | **FAIL** (`expected: 2 but was: 99`, 로그에 `update cart_lines`) |
+| 위 변경에서 `readOnly = true`만 복구 | **PASS** (flush 없음) |
+| 주입 제거(원상 복구) | **PASS** |
+
+즉 이 가드를 초록으로 유지하는 것은 `readOnly = true` 경계이며, 가드는 그 경계가 사라지면
+실제로 빨간불이 된다.
+
+### Testcontainers / Profile
+
+- `MySqlTestContainer` — `mysql:8.0.36` 컨테이너 **싱글턴**(static 초기화 + 수동 `start()`,
+  `@Container` 미사용)을 Cucumber Runner와 가드 테스트가 공유하고 `@DynamicPropertySource`로
+  `spring.datasource.*`를 주입한다. 임베디드 DB 자동 대체가 아님은 실행 로그의
+  `jdbc:mysql://localhost:32777/cart`로 확인했다.
+- **OrbStack 우회**: docker-java 기본 API 버전 협상 실패
+  (`client version 1.32 is too old. Minimum supported API version is 1.40`) →
+  surefire `systemPropertyVariables`에 `api.version=1.41` 추가로 해결(Testcontainers 알려진 이슈).
+- Profile: `application.yml`(공통 — OSIV off, `show-sql: true`) /
+  `application-local.yml`(docker MySQL, Walking Skeleton 수동 구동용) /
+  `application-test.yml`(Testcontainers, `ddl-auto: create-drop` — 인수 테스트·가드 테스트).
+  `dev`/`stage`/`prod`는 배포 대상이 없어 만들지 않았다(지어내지 않음).
+
+### 관통 확인 (직접 재현)
+
+E-1의 `@pending`을 임시로 떼고 실행 → 실행 SQL 로그가 `insert into carts` →
+`insert into cart_lines` ×2 → `select … from carts c1_0 left join cart_lines l1_0 …`
+순으로 찍히고, DispatcherServlet이 `CartCheckoutController.checkout` →
+`CartCalculator.calculate`까지 도달해 `UnsupportedOperationException`으로 실패했다
+(하드코딩·Fake가 아니라 진짜 파이프라인임을 보인 것). 확인 후 `@pending` 원상 복구
+(`.feature` 파일은 커밋 기준 byte-identical).
+
+### 미결 항목 (§6 RGB로 위임)
+
+- **U-1(요청 자체 null)·product 필드 null** — §4가 "§5에서 재판단"으로 보류한 항목.
+  REST 진입점에서 라인은 DB에서 오므로 `CalculateCartRequest`는 **Controller가 항상 직접
+  조립**한다 → 요청 자체 null·라인 목록 null·product null은 REST 경로로 도달 불가하다.
+  따라서 이들은 계산기의 공개 API 방어(unit test U-1)로만 남기고, REST 계층에는 별도
+  검증을 두지 않는다.
+- **E-14·E-15** — 위와 같은 이유로 현재 채널에서 실행 불가. Driver가 명시적 예외로
+  드러내며(조용한 통과 금지), 처리 방식(unit test로 이관할지 여부)은 §6에서 결정한다.
+- **거부(4xx) 매핑** — §1 유효성 위반 시 어떤 HTTP 상태로 응답할지는 계산기가 던지는
+  예외 타입이 정해지는 §6(U-8)에서 확정한다. 지금은 예외 핸들러를 두지 않았다(thinnest).
+
 ## 6. 진행 기록
 
 기어: low
 
 ## 7. JPA Repository
+
+> **아직 미완료.** §5 Walking Skeleton이 이 단계의 **출발점 골격**을 만들어 뒀다 —
+> `Cart`·`CartLineEntity`(엔티티), `CartRepository`(`@EntityGraph` 조회),
+> `CartLineJpaRepository`(라인 단독 조회). 이 단계에서 남은 일은 그 골격을 도메인 전체를
+> 커버하도록 **완성**하고, InMemory 구현과의 **계약 테스트(동등성 검증)**를 세우는 것이다
+> (계약 테스트는 부모 클래스에 `@Transactional(propagation = NOT_SUPPORTED)`를 붙여
+> 1차 캐시가 DB 접근을 가리는 공허한 검증을 막고 `@AfterEach`로 직접 정리한다).
 
 ## 8. DSL 개선
