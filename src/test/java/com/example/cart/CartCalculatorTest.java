@@ -55,4 +55,35 @@ class CartCalculatorTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("수량");
     }
+
+    @Test
+    void 위반_유형마다_구분_가능한_메시지가_나온다() {
+        final String requestNull = messageOf(() -> calculator.calculate(null));
+        final String linesNull = messageOf(() -> calculator.calculate(new CalculateCartRequest(null, 0, 0)));
+        final String lineNull = messageOf(() -> {
+            final List<CartLine> lines = new java.util.ArrayList<>();
+            lines.add(null);
+            calculator.calculate(new CalculateCartRequest(lines, 0, 0));
+        });
+        final String quantity = messageOf(() -> calculator.calculate(
+                new CalculateCartRequest(List.of(new CartLine("상품", 1L, 0)), 0, 0)));
+        final String unitPrice = messageOf(() -> calculator.calculate(
+                new CalculateCartRequest(List.of(new CartLine("상품", -1L, 1)), 0, 0)));
+        final String coupon = messageOf(() -> calculator.calculate(
+                new CalculateCartRequest(List.of(), -1, 0)));
+        final String mileage = messageOf(() -> calculator.calculate(
+                new CalculateCartRequest(List.of(), 0, -1)));
+
+        assertThat(java.util.Set.of(requestNull, linesNull, lineNull, quantity, unitPrice, coupon, mileage))
+                .hasSize(7);
+    }
+
+    private String messageOf(final Runnable action) {
+        try {
+            action.run();
+            throw new AssertionError("예외가 발생하지 않았다");
+        } catch (final IllegalArgumentException e) {
+            return e.getMessage();
+        }
+    }
 }
