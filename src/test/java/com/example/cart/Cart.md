@@ -615,7 +615,7 @@ E-1의 `@pending`을 임시로 떼고 실행 → 실행 SQL 로그가 `insert in
 
 ## 6. 진행 기록
 
-기어: low
+기어: mid (폭발 반경 high-stakes: 금액 계산 — 완료 시 적대적 리뷰) / 시작 커밋: a4ae5bd
 
 ## 7. JPA Repository
 

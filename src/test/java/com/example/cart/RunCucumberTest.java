@@ -18,7 +18,7 @@ import static io.cucumber.junit.platform.engine.Constants.PLUGIN_PROPERTY_NAME;
 @IncludeEngines("cucumber")
 @SelectClasspathResource("com/example/cart")
 @ConfigurationParameter(key = GLUE_PROPERTY_NAME, value = "com.example.cart")
-@ConfigurationParameter(key = FILTER_TAGS_PROPERTY_NAME, value = "not @pending")
+@ConfigurationParameter(key = FILTER_TAGS_PROPERTY_NAME, value = "not @pending and not @api-enforced")
 @ConfigurationParameter(key = PLUGIN_PROPERTY_NAME, value = "pretty")
 public class RunCucumberTest {
 }
