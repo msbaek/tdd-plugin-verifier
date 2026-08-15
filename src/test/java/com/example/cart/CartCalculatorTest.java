@@ -51,6 +51,19 @@ class CartCalculatorTest {
     }
 
     @Test
+    void 개별_라인_null이_앞선_라인의_필드_위반보다_우선한다() {
+        // §1 대표 예시: lines=[(수량0), null] → "모든 라인의 null 여부를 먼저 훑어 두
+        // 번째 라인의 null을 던진다 — 첫 라인의 수량<1은 검사되지 않는다."
+        final List<CartLine> lines = new ArrayList<>();
+        lines.add(aLine(10_000L, 0));
+        lines.add(null);
+
+        assertThatThrownBy(() -> calculator.calculate(new CalculateCartRequest(lines, 0, 0)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("라인은 null일 수 없다");
+    }
+
+    @Test
     void 여러_필드가_동시에_유효하지_않으면_수량_위반이_우선한다() {
         final List<CartLine> lines = List.of(aLine(-1L, 0));
 

@@ -103,9 +103,10 @@ Feature: 장바구니 결제 금액 계산
     # 정확히 반대 결과가 나와야 하는 짝 시나리오다.
     #
     # §6 RGB 확정: §5에서 REST 채널이 cartId 기반(라인은 JPA가 항상 non-null 컬렉션으로
-    # 반환)으로 확정되면서, 이 시나리오는 API 형태로 이미 만족된다 — "라인 목록이 null"인
-    # 입력을 이 채널로는 애초에 만들 수 없다. @pending → @api-enforced로 재태깅하고,
-    # 순수 함수 계약(다른 호출자가 null을 넘길 가능성)은 CartCalculatorTest 단위 테스트로 옮긴다.
+    # 반환)으로 확정되면서, 이 시나리오는 이 채널로는 **표현 자체가 불가능**하다 —
+    # "만족됨(satisfied)"이 아니라 "구성 불가(inexpressible)"다. 실행하면 Driver가
+    # UnsupportedOperationException으로 죽는다(rejected 아님). @pending → @api-enforced로
+    # 재태깅하고, 순수 함수 계약(다른 호출자가 null을 넘길 가능성)은 CartCalculatorTest로 이관한다.
     @api-enforced
     Scenario: E-14. 라인 목록 자체가 null이면 거부된다
       Given 장바구니 라인 목록이 null인 계산 요청이 준비되어 있다
@@ -115,7 +116,8 @@ Feature: 장바구니 결제 금액 계산
     # §1 null 3종 중 ③. 라인 목록은 있으나 그 안의 원소가 null인 경우 —
     # 목록 참조만 확인하고 원소를 확인하지 않는 얕은 구현을 잡는다.
     # §6 RGB 확정: E-14와 동일한 이유로 @api-enforced — JPA 엔티티 매핑은 null 원소를
-    # 만들 수 없다. 순수 함수 계약은 CartCalculatorTest로 이관.
+    # 만들 수 없어 이 채널로는 구성 불가(inexpressible)하다. 순수 함수 계약은
+    # CartCalculatorTest로 이관.
     @api-enforced
     Scenario: E-15. 라인 목록 안에 null 라인이 섞여 있으면 거부된다
       Given 장바구니에 단가 12000원 상품이 2개 담겨 있다
