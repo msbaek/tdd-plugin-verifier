@@ -60,6 +60,19 @@ class CartCalculatorTest {
     }
 
     @Test
+    void 서로_다른_라인의_서로_다른_필드가_위반해도_필드_우선순위가_라인_순서보다_우선한다() {
+        // 라인 A(1번째): 단가 위반만. 라인 B(2번째): 수량 위반만.
+        // §1: "필드 유효성 안에서는 수량→단가→…" 순서가 전체 라인에 걸쳐 먼저 적용된다 —
+        // "라인 순서 우선"은 같은 필드를 검사하는 동안에만 적용되는 하위 규칙이다.
+        // 따라서 라인 순서상 앞선 A의 단가 위반이 아니라, 필드 순서상 앞선 수량 위반(B)이 이긴다.
+        final List<CartLine> lines = List.of(aLine(-1L, 5), aLine(100L, 0));
+
+        assertThatThrownBy(() -> calculator.calculate(new CalculateCartRequest(lines, 0, 0)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("수량");
+    }
+
+    @Test
     void 위반_유형마다_구분_가능한_메시지가_나온다() {
         final String requestNull = messageOf(() -> calculator.calculate(null));
         final String linesNull = messageOf(() -> calculator.calculate(new CalculateCartRequest(null, 0, 0)));
