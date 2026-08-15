@@ -18,7 +18,8 @@ public class CartCalculator {
         for (final CartLine line : request.lines()) {
             productTotal += line.unitPrice() * line.quantity();
         }
-        final long productBalance = Math.max(0, productTotal - request.coupon());
+        final long afterCoupon = Math.max(0, productTotal - request.coupon());
+        final long productBalance = Math.max(0, afterCoupon - request.mileage());
         return productBalance + SHIPPING_FEE;
     }
 
