@@ -87,6 +87,25 @@ class CartCalculatorTest {
         assertThat(finalAmount).isEqualTo(13_000);
     }
 
+    @Test
+    void 유효한_임의_입력에_대해_최종_결제_금액은_항상_0_이상이다() {
+        final java.util.Random random = new java.util.Random(20260815L);
+
+        for (int i = 0; i < 500; i++) {
+            final int lineCount = random.nextInt(6);
+            final List<CartLine> lines = new java.util.ArrayList<>();
+            for (int j = 0; j < lineCount; j++) {
+                lines.add(new CartLine("상품", random.nextInt(100_001), 1 + random.nextInt(10)));
+            }
+            final long coupon = random.nextInt(100_001);
+            final long mileage = random.nextInt(100_001);
+
+            final long finalAmount = calculator.calculate(new CalculateCartRequest(lines, coupon, mileage));
+
+            assertThat(finalAmount).isGreaterThanOrEqualTo(0);
+        }
+    }
+
     private String messageOf(final Runnable action) {
         try {
             action.run();
