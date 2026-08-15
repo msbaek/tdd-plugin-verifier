@@ -2,6 +2,7 @@ package com.example.cart;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -10,6 +11,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 /**
@@ -51,5 +53,11 @@ public class CartCheckoutController {
         final long finalAmount = calculator.calculate(new CalculateCartRequest(lines, request.coupon(), request.mileage()));
 
         return ResponseEntity.ok(new CheckoutResponse(finalAmount));
+    }
+
+    /** §1 입력 유효성 위반(계산기가 던짐)은 서버 오류(500)가 아니라 클라이언트 오류(400)다. */
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Void> handleInvalidRequest(final IllegalArgumentException e) {
+        return ResponseEntity.status(BAD_REQUEST).build();
     }
 }
