@@ -78,6 +78,15 @@ class CartCalculatorTest {
                 .hasSize(7);
     }
 
+    @Test
+    void 무할인_기준선_상품합계와_배송비를_그대로_반환한다() {
+        final List<CartLine> lines = List.of(new CartLine("상품", 10_000L, 1));
+
+        final long finalAmount = calculator.calculate(new CalculateCartRequest(lines, 0, 0));
+
+        assertThat(finalAmount).isEqualTo(13_000);
+    }
+
     private String messageOf(final Runnable action) {
         try {
             action.run();
