@@ -46,4 +46,13 @@ class CartCalculatorTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("라인 목록");
     }
+
+    @Test
+    void 여러_필드가_동시에_유효하지_않으면_수량_위반이_우선한다() {
+        final List<CartLine> lines = List.of(new CartLine("상품", -1L, 0));
+
+        assertThatThrownBy(() -> calculator.calculate(new CalculateCartRequest(lines, -1, -1)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("수량");
+    }
 }
