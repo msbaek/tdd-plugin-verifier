@@ -24,6 +24,11 @@ public class CartCalculator {
                 throw new IllegalArgumentException("수량은 1 이상이어야 한다");
             }
         }
+        for (final CartLine line : request.lines()) {
+            if (line.unitPrice() < 0) {
+                throw new IllegalArgumentException("단가는 음수일 수 없다");
+            }
+        }
         return 0;
     }
 }
