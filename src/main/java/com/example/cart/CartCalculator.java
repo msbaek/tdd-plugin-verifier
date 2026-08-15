@@ -29,6 +29,9 @@ public class CartCalculator {
                 throw new IllegalArgumentException("단가는 음수일 수 없다");
             }
         }
+        if (request.coupon() < 0) {
+            throw new IllegalArgumentException("쿠폰은 음수일 수 없다");
+        }
         return 0;
     }
 }
