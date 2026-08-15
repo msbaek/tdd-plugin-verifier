@@ -39,4 +39,11 @@ class CartCalculatorTest {
         assertThatThrownBy(() -> calculator.calculate(new CalculateCartRequest(lines, 0, 0)))
                 .isInstanceOf(IllegalArgumentException.class);
     }
+
+    @Test
+    void null_층이_필드_층보다_항상_먼저_검사된다() {
+        assertThatThrownBy(() -> calculator.calculate(new CalculateCartRequest(null, -1, 0)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("라인 목록");
+    }
 }
