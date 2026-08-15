@@ -11,6 +11,14 @@ public class CartCalculator {
         if (request == null) {
             throw new IllegalArgumentException("계산 요청은 null일 수 없다");
         }
+        if (request.lines() == null) {
+            throw new IllegalArgumentException("라인 목록은 null일 수 없다");
+        }
+        for (final CartLine line : request.lines()) {
+            if (line == null) {
+                throw new IllegalArgumentException("라인은 null일 수 없다");
+            }
+        }
         return 0;
     }
 }

@@ -479,8 +479,8 @@ E-1 이후로는 집계·기술 도메인·불변식 순으로 일반화해 나�
 
 - [x] E-7. 빈 장바구니는 배송비도 붙지 않는다 *(most degenerate — Gherkin)*
 - [x] U-1. 계산 요청 자체가 null이면 거부된다 *(unit, 보류 해소 — 계산기 직접 호출 단위로 검증)*
-- [ ] E-14. 라인 목록 자체가 null이면 거부된다 *(Gherkin)*
-- [ ] E-15. 라인 목록 안에 null 라인이 섞여 있으면 거부된다 *(Gherkin)*
+- [x] E-14. 라인 목록 자체가 null이면 거부된다 *(unit — REST 채널 구조상 @api-enforced, CartCalculatorTest로 검증)*
+- [x] E-15. 라인 목록 안에 null 라인이 섞여 있으면 거부된다 *(unit — REST 채널 구조상 @api-enforced, CartCalculatorTest로 검증)*
 - [ ] E-9. 수량 0 → 거부 *(Gherkin)*
 - [ ] E-10. 단가 -1 → 거부 *(Gherkin)*
 - [ ] E-11. 쿠폰 -1 → 거부 *(Gherkin)*
