@@ -7,9 +7,18 @@ package com.example.cart;
  */
 public class CartCalculator {
 
+    private static final long SHIPPING_FEE = 3_000L;
+
     public long calculate(final CalculateCartRequest request) {
         validate(request);
-        return 0;
+        if (request.lines().isEmpty()) {
+            return 0;
+        }
+        long productTotal = 0;
+        for (final CartLine line : request.lines()) {
+            productTotal += line.unitPrice() * line.quantity();
+        }
+        return productTotal + SHIPPING_FEE;
     }
 
     /** §1 검사 순서 정본: 요청 null → 라인목록 null → 개별라인 null → 수량 → 단가 → 쿠폰 → 마일리지. */
