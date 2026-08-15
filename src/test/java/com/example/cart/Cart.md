@@ -617,6 +617,22 @@ E-1의 `@pending`을 임시로 떼고 실행 → 실행 SQL 로그가 `insert in
 
 기어: low (폭발 반경 high-stakes: 금액 계산 — 완료 시 적대적 리뷰) / 시작 커밋: a4ae5bd
 
+### 적대적 리뷰 결과 (시작 커밋 a4ae5bd..HEAD)
+
+- **[MAJOR #1] 해소** — 컨트롤러에 예외 핸들러가 없어 입력 유효성 위반이 500으로 새고
+  있었다(인수 테스트는 "not 2xx"만 봐서 이를 정상 거부로 오인). `wasRejectedAsClientError()`로
+  단언을 4xx 검사로 강화해 버그를 먼저 RED로 재현한 뒤, `@ExceptionHandler`로 400 매핑을
+  추가해 GREEN.
+- **[MAJOR #2] 해소** — 서로 다른 라인의 서로 다른 필드가 동시 위반할 때(라인A 단가위반/
+  라인B 수량위반) 어느 것이 이기는지 §1 규칙 재확인 결과 기존 구현이 이미 올바름(필드
+  우선순위가 라인 순서보다 우선). 반례를 고정 테스트로 추가. 부속 지적으로 `@OrderBy`가
+  없어 REST 채널에서 "라인 순서" 자체가 보장되지 않던 문제도 함께 수정.
+- **[MINOR] 수용** — (1) 단가·수량 오버플로 방어는 사용자가 이미 범위 밖으로 결정(§4
+  각주). (2) `@api-enforced` E-14/E-15는 의도된 구조적 제외(§6 결정)이며 순수 함수 계약은
+  CartCalculatorTest가 검증. (3) property 테스트의 생성 범위는 §4에 명시된 대로이며,
+  `Math.max(0,...)` clamp로 인해 "항상 참"인 것은 그 clamp 자체가 검증 대상이므로 무의미하지
+  않음(clamp를 제거하면 즉시 깨짐 — mutation 관점에서 실효성 있음).
+
 ## 7. JPA Repository
 
 **범위 결정 — InMemory 이중 구현은 만들지 않는다.** §5 Walking Skeleton에서 `inMemory`
