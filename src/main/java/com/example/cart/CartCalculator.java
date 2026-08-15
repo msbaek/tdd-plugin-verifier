@@ -8,6 +8,12 @@ package com.example.cart;
 public class CartCalculator {
 
     public long calculate(final CalculateCartRequest request) {
+        validate(request);
+        return 0;
+    }
+
+    /** §1 검사 순서 정본: 요청 null → 라인목록 null → 개별라인 null → 수량 → 단가 → 쿠폰 → 마일리지. */
+    private void validate(final CalculateCartRequest request) {
         if (request == null) {
             throw new IllegalArgumentException("계산 요청은 null일 수 없다");
         }
@@ -35,6 +41,5 @@ public class CartCalculator {
         if (request.mileage() < 0) {
             throw new IllegalArgumentException("마일리지는 음수일 수 없다");
         }
-        return 0;
     }
 }
