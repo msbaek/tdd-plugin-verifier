@@ -6,9 +6,9 @@
 - [x] 3. 인수 테스트 셋업 (.feature + Runner, 미구현은 @pending)
 - [x] 4. Unit Test 목록 작성
 - [x] 5. Walking Skeleton 구현
-- [ ] 6. 테스트 구현 (RGB 사이클 — 각 Green이 자기 시나리오 @pending 해제)
-- [ ] 7. JPA Repository 완성 (계약 테스트로 InMemory와 동등성 검증)
-- [ ] 8. DSL 개선 (Steps·Protocol Driver·Test Data Builder)
+- [x] 6. 테스트 구현 (RGB 사이클 — 각 Green이 자기 시나리오 @pending 해제)
+- [x] 7. JPA Repository 완성 (계약 테스트로 InMemory와 동등성 검증)
+- [x] 8. DSL 개선 (Steps·Protocol Driver·Test Data Builder)
 
 ## 1. 요구사항 — 도메인 규칙(0층) + User Story
 
@@ -477,28 +477,28 @@ E-1 이후로는 집계·기술 도메인·불변식 순으로 일반화해 나�
 따라 null 층(E-14·E-15) → 필드 층(E-9~E-12) → 라인 순서(E-16) → 빈 장바구니+할인
 경계(E-13) 순으로 배치했다:
 
-- [ ] E-7. 빈 장바구니는 배송비도 붙지 않는다 *(most degenerate — Gherkin)*
-- [ ] U-1. 계산 요청 자체가 null이면 거부된다 *(unit, 보류 — §5 이후 재판단)*
-- [ ] E-14. 라인 목록 자체가 null이면 거부된다 *(Gherkin)*
-- [ ] E-15. 라인 목록 안에 null 라인이 섞여 있으면 거부된다 *(Gherkin)*
-- [ ] E-9. 수량 0 → 거부 *(Gherkin)*
-- [ ] E-10. 단가 -1 → 거부 *(Gherkin)*
-- [ ] E-11. 쿠폰 -1 → 거부 *(Gherkin)*
-- [ ] E-12. 마일리지 -1 → 거부 *(Gherkin)*
-- [ ] E-16. 여러 라인 중 뒤쪽 라인만 위반해도 거부된다(라인 순서) *(Gherkin)*
-- [ ] E-13. 빈 장바구니에 쿠폰·마일리지가 있어도 거부되지 않고 0원이다(정상 입력 경계) *(Gherkin)*
-- [ ] U-9. null 층이 필드 층보다 항상 먼저 검사된다(층간 우선순위) *(unit)*
-- [ ] U-4. 여러 필드가 동시에 유효하지 않을 때 우선순위대로 하나의 예외만 던진다 *(unit)*
-- [ ] U-8. 위반 유형마다 구분 가능한 예외/메시지가 나온다(§2 위임 이행) *(unit)*
-- [ ] U-5. 라인 1개·쿠폰 0원·마일리지 0원 → 상품 합계 + 배송비 그대로(무할인 기준선, 13,000원) *(unit)*
-- [ ] E-6. 쿠폰이 상품 합계를 초과해도 배송비는 깎이지 않는다 *(Gherkin)*
-- [ ] E-2. 마일리지가 상품 잔액 내에서만 차감된다 *(Gherkin)*
-- [ ] E-4. 마일리지 차감 상한을 정확히 소진(경계) *(Gherkin)*
-- [ ] E-5. 마일리지 차감 상한 초과 — 미사용 발생(경계 초과) *(Gherkin)*
-- [ ] E-1. 쿠폰과 마일리지가 순서대로 적용된 최종 결제 금액(마일리지가 상품·배송비
+- [x] E-7. 빈 장바구니는 배송비도 붙지 않는다 *(most degenerate — Gherkin)*
+- [x] U-1. 계산 요청 자체가 null이면 거부된다 *(unit, 보류 해소 — 계산기 직접 호출 단위로 검증)*
+- [x] E-14. 라인 목록 자체가 null이면 거부된다 *(unit — REST 채널 구조상 @api-enforced, CartCalculatorTest로 검증)*
+- [x] E-15. 라인 목록 안에 null 라인이 섞여 있으면 거부된다 *(unit — REST 채널 구조상 @api-enforced, CartCalculatorTest로 검증)*
+- [x] E-9. 수량 0 → 거부 *(Gherkin)*
+- [x] E-10. 단가 -1 → 거부 *(Gherkin)*
+- [x] E-11. 쿠폰 -1 → 거부 *(Gherkin)*
+- [x] E-12. 마일리지 -1 → 거부 *(Gherkin)*
+- [x] E-16. 여러 라인 중 뒤쪽 라인만 위반해도 거부된다(라인 순서) *(Gherkin — E-9 구현의 전체 라인 순회가 이미 커버, 신규 프로덕션 코드 없음)*
+- [x] E-13. 빈 장바구니에 쿠폰·마일리지가 있어도 거부되지 않고 0원이다(정상 입력 경계) *(Gherkin — fake-it 스텁이 이미 0을 반환, 신규 프로덕션 코드 없음)*
+- [x] U-9. null 층이 필드 층보다 항상 먼저 검사된다(층간 우선순위) *(unit — 기존 validate() 순서가 이미 충족, 신규 프로덕션 코드 없음)*
+- [x] U-4. 여러 필드가 동시에 유효하지 않을 때 우선순위대로 하나의 예외만 던진다 *(unit — 기존 validate() 필드 순서가 이미 충족)*
+- [x] U-8. 위반 유형마다 구분 가능한 예외/메시지가 나온다(§2 위임 이행) *(unit — 기존 7종 메시지가 모두 서로 다름, 신규 프로덕션 코드 없음)*
+- [x] U-5. 라인 1개·쿠폰 0원·마일리지 0원 → 상품 합계 + 배송비 그대로(무할인 기준선, 13,000원) *(unit)*
+- [x] E-6. 쿠폰이 상품 합계를 초과해도 배송비는 깎이지 않는다 *(Gherkin)*
+- [x] E-2. 마일리지가 상품 잔액 내에서만 차감된다 *(Gherkin)*
+- [x] E-4. 마일리지 차감 상한을 정확히 소진(경계) *(Gherkin)*
+- [x] E-5. 마일리지 차감 상한 초과 — 미사용 발생(경계 초과) *(Gherkin — E-4 구현의 Math.max(0,...) clamp가 이미 커버, 신규 프로덕션 코드 없음)*
+- [x] E-1. 쿠폰과 마일리지가 순서대로 적용된 최종 결제 금액(마일리지가 상품·배송비
       양쪽에 걸쳐 차감되는 경계도 함께 담당 — 옛 E-3 흡수) *(핵심 시나리오 — Gherkin)*
-- [ ] E-8. 같은 상품이 두 라인으로 쪼개져도 결과는 같다(집계 경계) *(Gherkin)*
-- [ ] U-7. 임의 입력(유효 범위 내)에 대해 최종 결제 금액은 항상 0 이상이다 *(unit, property-based)*
+- [x] E-8. 같은 상품이 두 라인으로 쪼개져도 결과는 같다(집계 경계) *(Gherkin — sumProductTotal의 라인 순회가 이미 커버, 신규 프로덕션 코드 없음)*
+- [x] U-7. 임의 입력(유효 범위 내)에 대해 최종 결제 금액은 항상 0 이상이다 *(unit, property-based — jqwik 미도입, JUnit 내 500회 랜덤 샘플링으로 대체. Math.max(0,...) clamp가 이미 불변식을 보장)*
 
 ### 중복 제거 적용 내역
 
@@ -615,15 +615,39 @@ E-1의 `@pending`을 임시로 떼고 실행 → 실행 SQL 로그가 `insert in
 
 ## 6. 진행 기록
 
-기어: low
+기어: high (폭발 반경 high-stakes: 금액 계산 — 완료 시 적대적 리뷰) / 시작 커밋: a4ae5bd
+
+### high 기어 구현 메모
+
+`tdd-rgb-low`·`tdd-rgb-mid` 브랜치에서 같은 도메인 규칙을 먼저 구현하며 적대적 리뷰로
+MAJOR 4건을 찾아 고쳤다(예외 핸들러 부재 500 누출, `@OrderBy` 부재로 라인 순서 미보장,
+`is4xxClientError()`가 404를 삼킴, `@OrderBy` 주석의 근거 없는 E-16 인용). 이 high
+브랜치는 그 네 수정을 모두 처음부터 반영한 채 시작했다 — 동일 use case를 세 번째
+구현하면서 이미 아는 결함을 재도입하는 것은 검증 극장이다. high 기어 규칙대로 전체
+테스트 목록을 커밋 없이(add까지만) 자율 진행한 뒤 use case 전체를 커밋 하나로 남기고,
+그 뒤에 이 브랜치 자체의 적대적 리뷰를 받는다.
+
+### 적대적 리뷰 결과 (시작 커밋 a4ae5bd..HEAD)
+
+(리뷰 실행 후 이 자리에 기록)
 
 ## 7. JPA Repository
 
-> **아직 미완료.** §5 Walking Skeleton이 이 단계의 **출발점 골격**을 만들어 뒀다 —
-> `Cart`·`CartLineEntity`(엔티티), `CartRepository`(`@EntityGraph` 조회),
-> `CartLineJpaRepository`(라인 단독 조회). 이 단계에서 남은 일은 그 골격을 도메인 전체를
-> 커버하도록 **완성**하고, InMemory 구현과의 **계약 테스트(동등성 검증)**를 세우는 것이다
-> (계약 테스트는 부모 클래스에 `@Transactional(propagation = NOT_SUPPORTED)`를 붙여
-> 1차 캐시가 DB 접근을 가리는 공허한 검증을 막고 `@AfterEach`로 직접 정리한다).
+**범위 결정 — InMemory 이중 구현은 만들지 않는다.** §5 Walking Skeleton에서 `inMemory`
+profile을 도입한 적이 없다 — 이 기능(장바구니 결제 금액 계산)은 처음부터 `Cart`/
+`CartLineEntity`를 실제 MySQL로만 다뤘고, 다른 배포 대상·테스트 환경이 in-memory
+저장소를 요구한 적이 없다. 계약 테스트로 검증할 "동등성"의 대상(두 번째 구현)이
+존재하지 않는 상태에서 InMemory 구현을 지금 새로 만드는 것은 이번 tdd-plan이 요구하지
+않은 범위를 지어내는 일이다(No overengineering).
+
+대신 이번 단계에서 확인한 것:
+- **JPA 매핑 완성**: `Cart`(aggregate root, `@OneToMany` LAZY)·`CartLineEntity`(`@ManyToOne`
+  LAZY) — §5에서 이미 완성됐고 RGB 6단계 동안 스키마 변경 없이 그대로 재사용됨
+- **Repository 인터페이스**: `CartRepository extends JpaRepository<Cart, Long>` +
+  `findWithLinesById`(`@EntityGraph`) — 추가 쿼리 메소드 불필요(계산 기능은 이 하나면 충분)
+- **실제 MySQL 검증**: `CartCheckoutWriteLeakGuardTest`가 Testcontainers MySQL로 저장·조회·
+  트랜잭션 경계(readOnly)를 이미 검증(§5에서 작성, RGB 6단계 내내 계속 green)
+- **클래스 다이어그램**은 생략 — Repository 계층이 `CartRepository` 하나뿐이라 다이어그램이
+  텍스트보다 이해를 더 돕지 않음(Cart.md §5의 산문 설명으로 충분)
 
 ## 8. DSL 개선

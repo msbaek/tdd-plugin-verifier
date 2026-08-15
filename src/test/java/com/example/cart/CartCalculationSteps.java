@@ -85,6 +85,6 @@ public class CartCalculationSteps {
 
     @Then("계산이 거부된다")
     public void 계산이_거부됨을_확인한다() {
-        assertThat(driver.wasRejected()).isTrue();
+        assertThat(driver.wasRejectedAsClientError()).isTrue();
     }
 }

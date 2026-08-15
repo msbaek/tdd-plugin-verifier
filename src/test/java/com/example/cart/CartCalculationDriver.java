@@ -30,6 +30,7 @@ class CartCalculationDriver {
 
     private Long finalAmount;
     private boolean rejected;
+    private org.springframework.http.HttpStatusCode lastStatusCode;
     private String lastStatus = "(요청 전)";
 
     CartCalculationDriver(final TestRestTemplate restTemplate, final CartRepository cartRepository) {
@@ -83,6 +84,7 @@ class CartCalculationDriver {
                 CheckoutResponse.class,
                 cartId);
 
+        lastStatusCode = response.getStatusCode();
         lastStatus = response.getStatusCode().toString();
         if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
             finalAmount = response.getBody().finalAmount();
@@ -103,6 +105,15 @@ class CartCalculationDriver {
 
     boolean wasRejected() {
         return rejected;
+    }
+
+    /**
+     * 입력 유효성 위반이 정확히 400(Bad Request)으로 거부됐는지 확인한다.
+     * 5xx(서버 오류)를 거부로 오인하지 않는 것은 물론, 404(장바구니 없음)도 별개
+     * 실패 사유이므로 뭉뚱그리지 않는다 — mid 적대적 리뷰 MAJOR #1.
+     */
+    boolean wasRejectedAsClientError() {
+        return rejected && org.springframework.http.HttpStatus.BAD_REQUEST.equals(lastStatusCode);
     }
 
     /**
