@@ -18,7 +18,8 @@ public class CartCalculator {
         for (final CartLine line : request.lines()) {
             productTotal += line.unitPrice() * line.quantity();
         }
-        return productTotal + SHIPPING_FEE;
+        final long productBalance = Math.max(0, productTotal - request.coupon());
+        return productBalance + SHIPPING_FEE;
     }
 
     /** §1 검사 순서 정본: 요청 null → 라인목록 null → 개별라인 null → 수량 → 단가 → 쿠폰 → 마일리지. */
