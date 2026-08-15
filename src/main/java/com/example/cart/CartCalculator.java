@@ -19,6 +19,11 @@ public class CartCalculator {
                 throw new IllegalArgumentException("라인은 null일 수 없다");
             }
         }
+        for (final CartLine line : request.lines()) {
+            if (line.quantity() < 1) {
+                throw new IllegalArgumentException("수량은 1 이상이어야 한다");
+            }
+        }
         return 0;
     }
 }
