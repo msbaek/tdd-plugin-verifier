@@ -20,7 +20,10 @@ public class CartCalculator {
         }
         final long afterCoupon = Math.max(0, productTotal - request.coupon());
         final long productBalance = Math.max(0, afterCoupon - request.mileage());
-        return productBalance + SHIPPING_FEE;
+        final long mileageSpentOnProduct = afterCoupon - productBalance;
+        final long mileageRemaining = request.mileage() - mileageSpentOnProduct;
+        final long shippingBalance = Math.max(0, SHIPPING_FEE - mileageRemaining);
+        return productBalance + shippingBalance;
     }
 
     /** §1 검사 순서 정본: 요청 null → 라인목록 null → 개별라인 null → 수량 → 단가 → 쿠폰 → 마일리지. */
