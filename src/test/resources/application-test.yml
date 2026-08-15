@@ -1,0 +1,11 @@
+# test — Testcontainers MySQL. 접속 정보(url/username/password)는
+# MySqlTestContainer의 @DynamicPropertySource가 런타임에 채운다.
+spring:
+  jpa:
+    open-in-view: false
+    show-sql: true
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        format_sql: true

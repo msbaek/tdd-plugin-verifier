@@ -1,3 +1,11 @@
 spring:
   application:
     name: cart
+  jpa:
+    # OSIV는 도입 시점을 판단할 항목이 아니다 — 항상 끈다.
+    # 항목이 없으면 Spring Boot 기본값 true가 켜지므로 부재 = off가 아니다.
+    open-in-view: false
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true

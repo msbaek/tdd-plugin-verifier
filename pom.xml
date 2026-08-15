@@ -110,6 +110,20 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <systemPropertyVariables>
+                        <!--
+                          OrbStack의 Docker 엔드포인트는 docker-java의 기본 API 버전(1.32) 협상을
+                          거부한다("client version 1.32 is too old"). Testcontainers 알려진 이슈로,
+                          api.version을 명시해 우회한다.
+                        -->
+                        <api.version>1.41</api.version>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
