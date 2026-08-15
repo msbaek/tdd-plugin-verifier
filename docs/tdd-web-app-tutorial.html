@@ -1,0 +1,330 @@
+<title>TDD Web App 실전 튜토리얼</title>
+<style>
+  /* ---------- Tokens: light (default) ---------- */
+  :root {
+    --bg: #f7f8f6;
+    --surface: #ffffff;
+    --surface-2: #eef1ec;
+    --ink: #1d2521;
+    --ink-soft: #4c5a52;
+    --ink-faint: #77857c;
+    --line: #dde3dc;
+    --red: #c94848;
+    --red-bg: #fbeeee;
+    --green: #2c8f56;
+    --green-bg: #e9f5ee;
+    --blue: #3a68b8;
+    --blue-bg: #ecf1fa;
+    --amber: #a3660d;
+    --amber-bg: #faf3e4;
+    --code-bg: #222a26;
+    --code-ink: #d9e4dc;
+    --code-comment: #8aa392;
+    --shadow: 0 1px 3px rgba(29,37,33,.07), 0 8px 24px rgba(29,37,33,.05);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14181b;
+      --surface: #1b2124;
+      --surface-2: #21282c;
+      --ink: #e4ebe6;
+      --ink-soft: #a8b5ac;
+      --ink-faint: #76837b;
+      --line: #2c3438;
+      --red: #e06c6c;
+      --red-bg: #34211f;
+      --green: #52b57e;
+      --green-bg: #1c2f24;
+      --blue: #7398d8;
+      --blue-bg: #1e2733;
+      --amber: #d9a24a;
+      --amber-bg: #322a1a;
+      --code-bg: #101513;
+      --code-ink: #cfdad2;
+      --code-comment: #71856f;
+      --shadow: 0 1px 3px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.3);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #14181b;
+    --surface: #1b2124;
+    --surface-2: #21282c;
+    --ink: #e4ebe6;
+    --ink-soft: #a8b5ac;
+    --ink-faint: #76837b;
+    --line: #2c3438;
+    --red: #e06c6c;
+    --red-bg: #34211f;
+    --green: #52b57e;
+    --green-bg: #1c2f24;
+    --blue: #7398d8;
+    --blue-bg: #1e2733;
+    --amber: #d9a24a;
+    --amber-bg: #322a1a;
+    --code-bg: #101513;
+    --code-ink: #cfdad2;
+    --code-comment: #71856f;
+    --shadow: 0 1px 3px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.3);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Pretendard", "Pretendard Variable", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+  code, pre, .cmd { font-family: "JetBrains Mono", ui-monospace, "SF Mono", "D2Coding", Consolas, monospace; }
+
+  .wrap { max-width: 760px; margin: 0 auto; padding: 0 24px 88px; }
+  a { color: var(--blue); text-decoration: none; }
+  a:hover, a:focus-visible { text-decoration: underline; }
+  :focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; border-radius: 2px; }
+
+  /* ---------- Hero ---------- */
+  header.hero { padding: 64px 0 36px; }
+  .rgb-dots { display: flex; gap: 10px; margin-bottom: 24px; }
+  .rgb-dots span { width: 13px; height: 13px; border-radius: 50%; }
+  .rgb-dots .d-red { background: var(--red); }
+  .rgb-dots .d-green { background: var(--green); }
+  .rgb-dots .d-blue { background: var(--blue); }
+  .eyebrow { font-size: 12.5px; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 12px; }
+  h1 { font-size: clamp(28px, 5vw, 38px); line-height: 1.25; font-weight: 800; letter-spacing: -.02em; margin: 0 0 14px; text-wrap: balance; }
+  h1 .accent-red { color: var(--red); }
+  h1 .accent-green { color: var(--green); }
+  h1 .accent-blue { color: var(--blue); }
+  .lede { font-size: 17px; color: var(--ink-soft); margin: 0; max-width: 42em; text-wrap: pretty; }
+
+  /* ---------- Prep chips ---------- */
+  .prep { display: flex; flex-wrap: wrap; gap: 10px; margin: 26px 0 0; }
+  .prep span {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 16px; font-size: 13.5px; color: var(--ink-soft); box-shadow: var(--shadow);
+  }
+  .prep b { color: var(--ink); font-weight: 700; }
+
+  /* ---------- Habits ---------- */
+  .habits { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin: 36px 0 8px; }
+  .habit { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; box-shadow: var(--shadow); }
+  .habit h3 { margin: 0 0 4px; font-size: 15px; font-weight: 750; }
+  .habit p { margin: 0; font-size: 13.5px; color: var(--ink-soft); }
+  .habit:nth-child(1) h3 { color: var(--red); }
+  .habit:nth-child(2) h3 { color: var(--green); }
+  .habit:nth-child(3) h3 { color: var(--blue); }
+
+  /* ---------- Steps ---------- */
+  section.step { margin-top: 52px; position: relative; padding-left: 62px; }
+  .step-dot {
+    position: absolute; left: 0; top: 0;
+    width: 42px; height: 42px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 17px;
+    background: var(--surface); border: 1.5px solid var(--line); color: var(--ink-soft);
+    box-shadow: var(--shadow);
+  }
+  section.step.hot .step-dot { border-color: var(--red); color: var(--red); background: var(--red-bg); }
+  h2 { font-size: 21px; font-weight: 780; letter-spacing: -.01em; margin: 6px 0 4px; text-wrap: balance; }
+  .step-goal { font-size: 14.5px; color: var(--ink-soft); margin: 0 0 14px; max-width: 42em; }
+  p { max-width: 42em; text-wrap: pretty; }
+  ul { max-width: 42em; padding-left: 20px; margin: 10px 0; }
+  li { margin: 4px 0; font-size: 15px; }
+  li::marker { color: var(--ink-faint); }
+  strong { font-weight: 720; }
+  p code, li code, .check-line code, td code {
+    background: var(--surface-2); border: 1px solid var(--line);
+    padding: 1px 6px; border-radius: 5px; font-size: .86em;
+  }
+
+  .cmd {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--code-bg); color: var(--code-ink);
+    border-radius: 10px; padding: 12px 16px; font-size: 14px;
+    overflow-x: auto; white-space: nowrap; box-shadow: var(--shadow);
+    margin: 10px 0;
+  }
+  .cmd::before { content: "❯"; color: var(--code-comment); flex: none; }
+
+  pre {
+    background: var(--code-bg); color: var(--code-ink);
+    border-radius: 10px; padding: 14px 18px; overflow-x: auto;
+    font-size: 13px; line-height: 1.6; box-shadow: var(--shadow); margin: 10px 0;
+  }
+  pre .cmt { color: var(--code-comment); }
+
+  /* checkpoint line */
+  .check-line {
+    display: flex; gap: 10px; align-items: flex-start;
+    background: var(--green-bg); border-radius: 10px;
+    padding: 10px 14px; margin: 14px 0 0; font-size: 14px; color: var(--ink);
+    max-width: 46em;
+  }
+  .check-line::before { content: "✓"; font-weight: 800; color: var(--green); flex: none; }
+
+  .tip {
+    display: flex; gap: 10px; align-items: flex-start;
+    background: var(--amber-bg); border-radius: 10px;
+    padding: 10px 14px; margin: 10px 0 0; font-size: 14px;
+    max-width: 46em;
+  }
+  .tip::before { content: "!"; font-weight: 800; color: var(--amber); flex: none; }
+
+  /* ---------- Table ---------- */
+  .tbl-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); background: var(--surface); margin: 12px 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  th {
+    text-align: left; font-size: 11.5px; font-weight: 750; letter-spacing: .07em; text-transform: uppercase;
+    color: var(--ink-faint); background: var(--surface-2);
+    padding: 9px 14px; border-bottom: 1px solid var(--line); white-space: nowrap;
+  }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  .chip { display: inline-block; font-size: 11.5px; font-weight: 750; letter-spacing: .05em; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .chip-red { background: var(--red-bg); color: var(--red); }
+  .chip-amber { background: var(--amber-bg); color: var(--amber); }
+  .chip-blue { background: var(--blue-bg); color: var(--blue); }
+
+  footer { margin-top: 72px; padding-top: 20px; border-top: 1px solid var(--line); color: var(--ink-faint); font-size: 13px; }
+</style>
+
+<div class="wrap">
+
+<header class="hero">
+  <div class="rgb-dots" aria-hidden="true"><span class="d-red"></span><span class="d-green"></span><span class="d-blue"></span></div>
+  <div class="eyebrow">msbaek-tdd plugin · 따라하기 가이드</div>
+  <h1><span class="accent-red">Red</span> → <span class="accent-green">Green</span> → <span class="accent-blue">Blue</span>,<br>Web App을 TDD로 구현하는 7단계</h1>
+  <p class="lede">장바구니 결제 금액 계산을 예제로, 요구사항 문서부터 REST + JPA + MySQL 관통 인수 테스트와 적대적 리뷰까지. 각 단계는 <strong>명령 → 생기는 것 → 확인</strong> 순서다.</p>
+  <div class="prep">
+    <span><b>준비물</b></span>
+    <span>Claude Code + msbaek-tdd plugin</span>
+    <span>Java 21 · Maven</span>
+    <span>Docker 실행 중 (Testcontainers)</span>
+  </div>
+</header>
+
+<div class="habits">
+  <div class="habit"><h3>정본은 하나</h3><p>모든 숫자·규칙의 정본은 Cart.md §1. Gherkin·테스트·코드는 그 파생 뷰다.</p></div>
+  <div class="habit"><h3>승인 후 커밋</h3><p>에이전트는 초안만 쓴다. 단계마다 내가 결정하고, 커밋한 뒤 다음으로.</p></div>
+  <div class="habit"><h3>직접 검증</h3><p>에이전트의 "BUILD SUCCESS"는 믿지 말고 <code>mvn test</code>를 직접 돌린다.</p></div>
+</div>
+
+<!-- 1 -->
+<section class="step">
+  <div class="step-dot">1</div>
+  <h2>요구사항 문서 쓰기</h2>
+  <p class="step-goal">플러그인 실행 전, 도메인 규칙을 마크다운 한 장으로 직접 적는다.</p>
+  <pre><span class="cmt"># docs/calculate-cart-requirements.md</span>
+- 장바구니 금액 산출. 부수효과 없는 순수 계산.
+- TDD 유형: web-app, rest, jpa, mysql
+
+## 도메인 규칙 (0층)
+- 상품 합계 = Σ(단가 × 수량). 배송비 고정 3,000원(빈 장바구니는 0원).
+- 적용 순서(불변식): 상품 합계 → 쿠폰 → 마일리지 → 배송비 합산
+- 쿠폰: 상품 합계에서만 차감, 초과분 소멸.
+- 마일리지: 상품 잔액 → 배송비 순으로 차감, 상한 초과분은 미사용.
+- 최종 결제 금액 = 상품 잔액 + 배송비 잔액. 항상 ≥ 0.</pre>
+  <p>완벽할 필요 없다 — 모호한 부분은 다음 단계에서 에이전트가 질문으로 끌어낸다. 단 <strong>핵심 불변식(적용 순서)만은 반드시 명시</strong>한다.</p>
+</section>
+
+<!-- 2 -->
+<section class="step">
+  <div class="step-dot">2</div>
+  <h2>프로젝트 생성</h2>
+  <p class="step-goal">Maven 프로젝트와 8단계 템플릿 문서가 생긴다.</p>
+  <div class="cmd">/tdd web-app com.example.cart.Cart</div>
+  <ul>
+    <li><code>pom.xml</code> — Spring Boot + JPA + Cucumber + Testcontainers</li>
+    <li><code>src/test/.../Cart.md</code> — <strong>8단계 체크리스트 템플릿.</strong> 이후 모든 진행 기록·정본이 이 파일에 쌓인다</li>
+  </ul>
+  <div class="check-line">생성 확인 후 첫 커밋. 이후 매 단계 승인마다 커밋한다.</div>
+</section>
+
+<!-- 3 -->
+<section class="step">
+  <div class="step-dot">3</div>
+  <h2>계획 수립</h2>
+  <p class="step-goal">도메인 규칙 → Gherkin → Unit Test 목록을 에이전트가 초안하고, 내가 승인한다.</p>
+  <div class="cmd">/tdd-plan @docs/calculate-cart-requirements.md</div>
+  <ul>
+    <li><strong>§1 도메인 규칙</strong> — 대표 입력 1건의 <strong>검산 전개 표</strong>(숫자의 정본)가 만들어진다</li>
+    <li><strong>§2 Gherkin</strong> — 규칙·검산 표를 시나리오로 변환 (이 예제: 15개)</li>
+    <li><strong>§4 Unit Test 목록</strong> — Gherkin이 못 다루는 세밀 분기만. 전체를 Degenerate→General 순으로 정렬한 구현 순서표가 나온다</li>
+  </ul>
+  <p>에이전트가 모호한 것(null 정책, 검증 책임, 범위)을 질문하면 <strong>답만 하면 된다</strong> — 지어내지 않는 것이 설계다.</p>
+  <p>§1~§4 승인이 끝나면 <strong>plan-critic</strong>이 문서를 적대적으로 검증한다(모순·정본 이중화·경계 누락). 이 예제는 2회 반려 후 3차에 통과했다.</p>
+  <div class="check-line">plan-critic <strong>PASS까지</strong> 반복. 통과 전에는 코드를 쓰지 않는다.</div>
+</section>
+
+<!-- 4 -->
+<section class="step">
+  <div class="step-dot">4</div>
+  <h2>인수 테스트 셋업</h2>
+  <p class="step-goal">§2 Gherkin이 실행 가능한 .feature가 된다. 전부 @pending이라 빌드는 그린.</p>
+  <div class="cmd">/cucumber-acceptance</div>
+  <ul>
+    <li><code>cart-checkout.feature</code> + Runner → Steps → Protocol Driver → SUT (Four Layer)</li>
+    <li>Runner 필터 <code>"not @pending"</code> — RGB에서 Green마다 자기 시나리오의 태그를 해제한다</li>
+  </ul>
+  <div class="check-line"><code>mvn test</code> → BUILD SUCCESS, 시나리오 전부 skipped(의도됨), undefined step 없음.</div>
+  <div class="tip"><strong>Driver가 원하는 채널인지 직접 열어 확인하라.</strong> 기본값은 빠른 in-process 호출이다. 이 예제는 사용자 결정으로 <strong>실제 HTTP → Spring 앱 → MySQL 관통</strong>으로 교체했고(API는 cartId로 DB에서 라인 조회), 그 결정을 Cart.md에 기록했다.</div>
+</section>
+
+<!-- 5 -->
+<section class="step">
+  <div class="step-dot">5</div>
+  <h2>Walking Skeleton</h2>
+  <p class="step-goal">가장 얇은 슬라이스로 HTTP → 앱 → MySQL을 먼저 관통시킨다. 계산 로직은 아직 스텁.</p>
+  <ul>
+    <li>JPA 엔티티 + Repository + <code>POST /carts/{cartId}/checkout</code> + Testcontainers 연결</li>
+    <li>관통이 목적이지 완성이 목적이 아니다</li>
+  </ul>
+  <div class="check-line">에이전트 보고와 무관하게 <code>mvn test</code>를 <strong>직접</strong> 돌린다. 이 예제에선 에이전트의 "BUILD SUCCESS"가 거짓이었고, 반복 실행(13회 중 12회 통과)으로 콜드스타트 플레이키임을 확인한 뒤 진행했다.</div>
+</section>
+
+<!-- 6 -->
+<section class="step hot">
+  <div class="step-dot">6</div>
+  <h2>RGB 사이클로 구현</h2>
+  <p class="step-goal">§4의 순서표를 따라 한 항목씩. 기어를 먼저 고른다 — 기어는 커밋 단위다.</p>
+  <div class="cmd">/tdd-rgb</div>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>기어</th><th>커밋 단위</th><th>이 예제 결과</th></tr></thead>
+    <tbody>
+      <tr><td><span class="chip chip-red">low</span></td><td>R / G / B 각 phase마다</td><td>39 커밋 — 학습·감사용</td></tr>
+      <tr><td><span class="chip chip-amber">mid</span></td><td>테스트 사이클(R+G+B)마다</td><td>7 커밋 — 일상 개발의 균형점</td></tr>
+      <tr><td><span class="chip chip-blue">high</span></td><td>use case 하나 = 커밋 하나</td><td>2 커밋 — 에이전트는 add까지만</td></tr>
+    </tbody>
+  </table></div>
+  <p>사이클의 리듬 (가장 퇴화한 케이스부터):</p>
+  <ul>
+    <li><strong style="color:var(--red)">Red</strong> — Gherkin이면 <code>@pending</code> 해제, unit이면 테스트 추가. <strong>실패를 눈으로 확인</strong></li>
+    <li><strong style="color:var(--green)">Green</strong> — 통과할 최소 구현 (첫 케이스는 <code>return 0</code>도 정답)</li>
+    <li><strong style="color:var(--blue)">Blue</strong> — 반복이 눈에 띄면 정리 (예: 검증 4개 쌓인 뒤 <code>validate()</code> 추출)</li>
+  </ul>
+  <div class="tip"><strong>"이미 green"은 정상이다.</strong> 앞선 일반화가 뒤 케이스를 덮으면, 테스트만 추가하는 커밋으로 행동을 고정하고 체크리스트에 사유를 남긴다. 채널로 표현 불가능한 시나리오는 태그(<code>@api-enforced</code>)로 제외하고 단위 테스트로 이관한다.</div>
+  <div class="check-line">체크리스트 전 항목 완료 + 전체 <code>mvn test</code> 그린 + <code>git status</code> 클린.</div>
+</section>
+
+<!-- 7 -->
+<section class="step">
+  <div class="step-dot">7</div>
+  <h2>적대적 리뷰로 마무리</h2>
+  <p class="step-goal">금액 계산 같은 고위험 도메인은 완료 시 적대적 리뷰가 필수다. 시작 커밋..HEAD diff를 리뷰어에게 준다.</p>
+  <p>이 예제에서 세 번의 독립 리뷰가 <strong>매번 서로 다른 진짜 결함</strong>을 찾았다:</p>
+  <ul>
+    <li>입력 위반이 <strong>500으로 새는데</strong> 인수 테스트가 정상 거부로 오인 → 400 매핑 추가</li>
+    <li>수정한 4xx 판정이 이번엔 <strong>404까지 삼킴</strong> → 400 정확 일치로 정밀화</li>
+    <li>규칙 문장을 리뷰마다 반대로 읽음 → 문장 대신 <strong>구체 예시 3개</strong>로 재작성</li>
+  </ul>
+  <p>MAJOR 지적은 항상 <strong>Red로 재현 → 수정 → Green</strong> 순서로 처리한다. 리뷰 지적 자체도 검증 대상이다 — 확인해 보니 구현이 이미 옳았다면, 리뷰어의 반례를 고정 테스트로 추가해 우려를 영구히 해소한다.</p>
+  <div class="check-line">MAJOR 0건 + 전체 그린이면 끝.</div>
+</section>
+
+<footer>
+  tdd-plugin-verifier 세션 실측 기반 · 상세 기록은 repo의 <code>docs/tdd-web-app-tutorial.md</code> 참조
+</footer>
+
+</div>
