@@ -156,8 +156,13 @@ git log --oneline a4ae5bd..tdd-rgb-low    # low: 39 커밋 (R/G/B 각 단계)
 git log --oneline a4ae5bd..tdd-rgb-mid    # mid: 7 커밋 (사이클 단위)
 git log --oneline a4ae5bd..tdd-rgb-high   # high: 2 커밋 (use case 단위 + 리뷰 반영)
 
-# 세 기어의 최종 코드는 같다 — 다른 것은 히스토리뿐
+# 세 기어가 도달한 계산 로직은 바이트 단위로 동일하다 (출력 없음 = 차이 없음)
 git diff tdd-rgb-low tdd-rgb-high -- src/main/java/com/example/cart/CartCalculator.java
+
+# 반면 리뷰 수정은 누적되지 않는다 — low에는 mid 리뷰가 고친 주석이 없다
+git diff tdd-rgb-low tdd-rgb-high -- src/main/java/com/example/cart/Cart.java
 ```
+
+> **기어는 결과물을 바꾸지 않았지만, 리뷰는 바꿨다.** 세 브랜치의 `CartCalculator.java`는 같은 blob 해시(`86cbdbe`)다 — 검토 밀도를 39커밋에서 2커밋까지 낮춰도 계산 로직은 같은 곳에 도달했다. 달라진 것은 **각 브랜치가 자기 적대적 리뷰가 찾은 수정만 갖고 있다**는 점이다: low는 자기 리뷰의 2건만, mid는 거기에 자기 리뷰 2건을 더한 상태, high는 여섯 건을 모두 반영한 상태(누적 관계 `high ⊇ mid ⊇ low`). §1의 결론이 코드 수준에서 다시 확인되는 지점이다 — 결과를 가른 것은 기어가 아니라 리뷰다. `main`이 `tdd-rgb-high`를 머지해 정본으로 삼는 이유이기도 하다.
 
 실험 B의 브랜치별 히스토리와 mid 브랜치에 남은 오버셀 버그는 [msbaek-tdd-plugin-verification](https://github.com/msbaek/msbaek-tdd-plugin-verification)(archive)에서 그대로 확인할 수 있다.
