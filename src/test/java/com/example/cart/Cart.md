@@ -6,7 +6,7 @@
 - [x] 3. 인수 테스트 셋업 (.feature + Runner, 미구현은 @pending)
 - [x] 4. Unit Test 목록 작성
 - [x] 5. Walking Skeleton 구현
-- [ ] 6. 테스트 구현 (RGB 사이클 — 각 Green이 자기 시나리오 @pending 해제)
+- [x] 6. 테스트 구현 (RGB 사이클 — 각 Green이 자기 시나리오 @pending 해제)
 - [ ] 7. JPA Repository 완성 (계약 테스트로 InMemory와 동등성 검증)
 - [ ] 8. DSL 개선 (Steps·Protocol Driver·Test Data Builder)
 
@@ -621,6 +621,33 @@ E-1의 `@pending`을 임시로 떼고 실행 → 실행 SQL 로그가 `insert in
 ## 6. 진행 기록
 
 기어: high (폭발 반경 high-stakes: 결제 금액 계산 — 완료 시 적대적 리뷰) / 시작 커밋: a4ae5bd
+
+### RGB 3-phase 완료 (use case: US-1 장바구니 결제 금액 계산)
+
+- `test:` 7404260 — 21개 테스트 항목 전체 실패 테스트 작성(Gherkin 13 unpend + unit 8 신규).
+  E-14·E-15는 REST+DB 채널 표현 불가로 unit test 이관, `.feature`는 `@wontimplement`로 영구 제외.
+  `CartCalculationDriver.wasRejected()`를 "2xx 아님"에서 "HTTP 400"으로 좁혀 공허한 통과를 제거.
+- `feat:` cc94ac4 — `CartCalculator.calculate()`에 §1 도메인 규칙 절차적 구현,
+  `CartCheckoutController`에 `IllegalArgumentException`→400 매핑 추가. 21개 전부 green.
+- `refactor:` 9b8e438 — Composed Method로 정리(`validate`·`sumProductTotal`·`shippingFeeFor`·
+  `deductMileage` 등으로 추출). 검사·계산 순서 불변식과 U-8 예외 메시지 보존 확인.
+
+### 적대적 리뷰 (시작 커밋 a4ae5bd..HEAD, adversarial-reviewer agent)
+
+- **[Major] 해소** — U-9·U-4가 `isInstanceOf(Exception.class)`만 확인해 검사 순서 우선순위를
+  실제로 검증하지 못함(뮤테이션 테스트로 재현: null 층을 필드 층 뒤로 옮겨도 green이었음).
+  구체 예외 타입·메시지 검증으로 강화(`test:` 4684f3b) — 강화 후 같은 뮤테이션이 즉시
+  실패함을 확인하고 프로덕션 코드는 원상 복구.
+- **[Minor] 보류(사용자 결정)** — 다음 세션으로 이연:
+  1. 라인 간 교차 필드 우선순위(line0 단가 위반 vs line1 수량 위반)를 검증하는 테스트 없음
+  2. `CartCheckoutController`의 `@ExceptionHandler(IllegalArgumentException.class)`가 로컬
+     스코프라, 향후 회귀로 NPE가 REST 경로에 새면 400 대신 500이 노출될 수 있음(현재는
+     Controller가 요청을 항상 직접 조립해 NPE가 REST로 도달 불가 — §5 결정과 일치, 문제 없음)
+- 부수 관찰(이번 diff와 무관, root cause 미조사): `mvn test` 로그에 간헐적
+  `Table 'cart.cart_lines' doesn't exist` DDL 경고 — 다중 Spring 컨텍스트의 `create-drop`
+  공유로 추정, 향후 flaky test 씨앗이 될 수 있어 별도 조사 권장.
+
+**Definition of Done 충족**: green 스위트 + 적대적 리뷰 critical/major 전부 해소.
 
 ## 7. JPA Repository
 
