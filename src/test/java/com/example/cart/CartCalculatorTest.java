@@ -49,28 +49,32 @@ class CartCalculatorTest {
     }
 
     // U-9: null 층이 필드 층보다 항상 먼저 검사된다(§1 검사 순서 정본의 층간 우선순위).
-    // 지금은 계산기가 무조건 예외를 던지므로 "예외가 던져진다" 수준의 최소 골격만 확인한다 —
-    // 구체적으로 어느 위반이 우선했는지(NullPointerException vs 다른 예외)는 U-8 및 실제
-    // 구현이 붙은 뒤 자연히 강화된다.
+    // 적대적 리뷰(뮤테이션 테스트)가 지적한 대로, "예외가 던져진다"만 보면 필드 층 예외
+    // (IllegalArgumentException)도 통과해 버려 순서 위반을 잡아내지 못한다. 구체 타입·메시지로
+    // null 층(NullPointerException, "lines must not be null")이 실제로 이겼는지 확인한다.
     @DisplayName("U-9: null 층이 필드 층보다 항상 먼저 검사된다(라인 목록 null + 쿠폰 음수 동시 위반)")
     @Test
     void null_layer_is_checked_before_field_layer() {
         final CalculateCartRequest request = new CalculateCartRequest(null, -1, 0);
 
         assertThatThrownBy(() -> calculator.calculate(request))
-                .isInstanceOf(Exception.class);
+                .isInstanceOf(NullPointerException.class)
+                .hasMessage("lines must not be null");
     }
 
     // U-4: 여러 필드가 동시에 유효하지 않을 때 우선순위대로 하나의 예외만 던진다(수량 → 단가
-    // → 쿠폰 → 마일리지 순). 지금은 최소 골격만 확인 — 구체 우선순위 검증은 U-8 몫이다.
-    @DisplayName("U-4: 수량<1 AND 단가<0처럼 여러 필드가 동시에 유효하지 않을 때 거부된다")
+    // → 쿠폰 → 마일리지 순). 적대적 리뷰 지적대로, "예외가 던져진다"만 보면 어느 필드가
+    // 이겼는지 구분하지 못한다. 수량<1(먼저)과 단가<0(나중)이 같은 라인에서 동시에 위반될 때
+    // 수량 위반의 구체 메시지로 실제 우선순위가 지켜졌는지 확인한다.
+    @DisplayName("U-4: 수량<1 AND 단가<0처럼 여러 필드가 동시에 유효하지 않을 때 수량 위반이 먼저 걸린다")
     @Test
     void rejects_when_multiple_fields_are_invalid_at_once() {
         final List<CartLine> lines = List.of(new CartLine("상품", -1L, 0));
         final CalculateCartRequest request = new CalculateCartRequest(lines, 0, 0);
 
         assertThatThrownBy(() -> calculator.calculate(request))
-                .isInstanceOf(Exception.class);
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("quantity must be >= 1");
     }
 
     // U-8: §1 검사 순서 정본의 7가지 위반 유형(① 요청 자체 null ② 라인 목록 null ③ 개별
