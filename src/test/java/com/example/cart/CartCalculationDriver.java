@@ -87,9 +87,14 @@ class CartCalculationDriver {
         if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
             finalAmount = response.getBody().finalAmount();
             rejected = false;
-        } else {
+        } else if (response.getStatusCode() == org.springframework.http.HttpStatus.BAD_REQUEST) {
             finalAmount = null;
             rejected = true;
+        } else {
+            // 예상 밖 상태(예: 미구현으로 인한 500) — 정당한 거부(400)가 아니라 버그/미구현 신호.
+            // §1 유효성 위반은 Green phase에서 예외 핸들러가 400으로 매핑한다.
+            finalAmount = null;
+            rejected = false;
         }
     }
 
