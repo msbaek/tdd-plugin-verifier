@@ -649,6 +649,28 @@ E-1의 `@pending`을 임시로 떼고 실행 → 실행 SQL 로그가 `insert in
 
 **Definition of Done 충족**: green 스위트 + 적대적 리뷰 critical/major 전부 해소.
 
+### 하드닝 3종(CRAP/DRY/mutation) 미수행 — 플러그인 버그로 확인됨 (사후 규명)
+
+이 브랜치(`tdd-rgb-high`, v1.39.1) 진행 당시 완료 보고에 "하드닝 제안" 블록이 나타나지
+않았다. 다른 세션(msbaek-claude-plugins)의 교차 확인 요청으로 원인을 조사한 결과:
+
+- `hardening-gate.md`(제안 전용 게이트 — CRAP·DRY·mutation 3종 실행을 "제안"만 하고
+  자동 실행하지 않음)는 `tdd-rgb/references/`에 파일로 존재했지만, 그 파일을 `Read`하라고
+  지시하는 곳은 `tdd-feature/SKILL.md` 한 곳뿐이었다. `tdd-rgb/SKILL.md`에는 참조가
+  전혀 없어(grep 0건), 이 세션처럼 `tdd-rgb`(step-wise RGB)로 진행하면 기어(gear)와
+  무관하게 하드닝 제안 자체가 나올 수 없는 구조였다.
+- 사용자 확인 결과 **설계 의도가 아니라 누락**이었다.
+- msbaek-claude-plugins repo 커밋 87957c4(v1.39.1 → v1.40.0)에서 수정: `tdd-rgb/SKILL.md`
+  Step 3(완료 처리)에 하드닝 제안 블록 추가, "조건부 절차 — references" 표에
+  `hardening-gate.md` 행 추가, FAILURE 체크리스트에 하드닝 제안 항목 추가,
+  `hardening-gate.md` 머리말을 tdd-feature 전용 → 양쪽 스킬 공용으로 갱신.
+
+**따라서 이 브랜치의 "적대적 리뷰는 수행됨 / 하드닝 3종(CRAP·DRY·mutation)은 미수행"
+상태는 검증 절차상의 선택이 아니라 플러그인 버그(게이트 미연결)의 결과였다.** v1.40.0
+이후 `tdd-rgb`로도 완료 시 하드닝 제안이 나온다 — 단, 여전히 "제안"이며 CRAP·DRY·mutation
+자체를 사후 소급 실행할지는 별도 판단 사항(이 브랜치는 §6까지 완료 상태이므로 재실행
+여부는 다음 세션에서 결정).
+
 ## 7. JPA Repository
 
 > **아직 미완료.** §5 Walking Skeleton이 이 단계의 **출발점 골격**을 만들어 뒀다 —
