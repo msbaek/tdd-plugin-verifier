@@ -683,6 +683,17 @@ Coder → **Cleaner**[CRAP+리뷰] → **Hardener**[mutation] → QA)과 대조�
 커밋(9b8e438)으로 tidying이 끝난 상태이므로 mutation을 바로 돌려도 되지만, CRAP·DRY
 결과로 추가 정리 대상이 나오면 그 정리를 먼저 마친 뒤에 mutation을 돌려야 결과가 유효하다.
 
+### 하드닝 3종 소급 실행 — ①CRAP·DRY 결과 (v1.40.1 순서 적용)
+
+대상: `CartCalculator.java`, `CartCheckoutController.java`(Phase B에서 변경된 `src/main/java` 전부)
+
+- **CRAP**(`crap4java-analyzer`): 최대 5.0(`CartCalculator.validate`, CC 5), 임계 8.0 미만.
+  🔴 Critical·🟡 Warning 0건, 전 메서드 100% 커버리지. `refactor:` 9b8e438의 Composed
+  Method 정리가 실효적이었음을 정량적으로 재확인.
+- **DRY**(`dry4java-analyzer`): threshold 0.82 기준 중복 0건. 0.6까지 낮춰 재확인해도
+  우연적 유사도 2건(생성자 필드 대입 패턴, JUnit given-when-then 반복)뿐 — 조치 불필요.
+- **② 구조 정리 단계**: ①에서 지적 사항이 없어 생략. 다음 단계(③ mutation)로 즉시 진행.
+
 ## 7. JPA Repository
 
 > **아직 미완료.** §5 Walking Skeleton이 이 단계의 **출발점 골격**을 만들어 뒀다 —
