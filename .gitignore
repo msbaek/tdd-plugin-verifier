@@ -4,3 +4,7 @@
 target
 .idea
 .settings
+
+# Claude Code 런타임 산출물 — 검증 결과가 아니라 세션 부산물이므로 추적하지 않는다
+.claude/
+docs/*-session.md
