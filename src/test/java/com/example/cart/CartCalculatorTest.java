@@ -146,4 +146,63 @@ class CartCalculatorTest {
                     .isGreaterThanOrEqualTo(0L);
         }
     }
+
+    // 뮤테이션 테스트(mutate4java) 생존 뮤턴트 킬: 아래 4건은 U-7("0 이상")·U-5(무할인 기준선) 같은
+    // 약한 검증만으로는 잡히지 않는 산술 뮤턴트다 — "0 이상"·"대표값 하나"는 값이 달라져도
+    // 여전히 참일 수 있으므로, 각 뮤턴트가 실제로 값을 바꾸는 지점을 정확한 기댓값으로 고정한다.
+
+    // line 21: Math.max(0, productTotal - coupon) → Math.max(1, ...)로 바뀌어도
+    // "쿠폰 < 상품 합계" 구간에서는 값이 안 바뀐다. 쿠폰이 상품 합계를 초과해 바닥(0)이
+    // 실제로 작동하는 구간에서만 1과 0의 차이가 드러난다.
+    @DisplayName("쿠폰이 상품 합계를 초과하면 상품 잔액은 정확히 0으로 바닥 처리된다(마일리지 0원)")
+    @Test
+    void product_balance_floors_at_exactly_zero_when_coupon_exceeds_product_total() {
+        final CalculateCartRequest request =
+                new CalculateCartRequest(List.of(new CartLine("상품", 5_000L, 1)), 10_000, 0);
+
+        final long finalAmount = calculator.calculate(request);
+
+        assertThat(finalAmount).isEqualTo(3_000L);
+    }
+
+    // line 21: Math.max(0, productTotal - coupon)에서 -가 +로 바뀌면 쿠폰이 할인이 아니라
+    // 할증이 된다. 쿠폰이 0보다 크고 상품 합계보다 작은 정상 차감 구간에서 정확한 값으로 확인한다.
+    @DisplayName("쿠폰은 상품 합계에서 정확히 차감된다(할증이 아니다)")
+    @Test
+    void coupon_is_subtracted_from_product_total_not_added() {
+        final CalculateCartRequest request =
+                new CalculateCartRequest(List.of(new CartLine("상품", 10_000L, 1)), 3_000, 0);
+
+        final long finalAmount = calculator.calculate(request);
+
+        assertThat(finalAmount).isEqualTo(10_000L);
+    }
+
+    // line 72: productTotal += unitPrice * quantity에서 *가 /로 바뀌어도 quantity=1인 라인만
+    // 쓰는 테스트는 구분하지 못한다(곱셈·나눗셈 결과가 같다). quantity>=2로 실제로 갈리는
+    // 값을 확인한다.
+    @DisplayName("한 라인의 상품 합계는 단가 곱하기 수량이다(나눗셈이 아니다) — 수량 2 이상으로 확인")
+    @Test
+    void line_total_is_unit_price_multiplied_by_quantity_not_divided() {
+        final CalculateCartRequest request =
+                new CalculateCartRequest(List.of(new CartLine("상품", 10_000L, 3)), 0, 0);
+
+        final long finalAmount = calculator.calculate(request);
+
+        assertThat(finalAmount).isEqualTo(33_000L);
+    }
+
+    // line 90: remainingShippingBalance = shippingFee - deductedFromShipping에서 -가 +로
+    // 바뀌면 배송비 잔액이 오히려 늘어난다. 마일리지가 상품 잔액을 완전히 소진하고 남아
+    // 배송비에 실제로 적용되는(deductedFromShipping > 0) 구간에서 정확한 값으로 확인한다.
+    @DisplayName("마일리지가 상품 잔액을 다 쓰고 남으면 배송비에서 정확히 차감된다(할증이 아니다)")
+    @Test
+    void leftover_mileage_is_subtracted_from_shipping_fee_not_added() {
+        final CalculateCartRequest request =
+                new CalculateCartRequest(List.of(new CartLine("상품", 5_000L, 1)), 0, 6_000);
+
+        final long finalAmount = calculator.calculate(request);
+
+        assertThat(finalAmount).isEqualTo(2_000L);
+    }
 }
